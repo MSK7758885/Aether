@@ -1086,11 +1086,18 @@ function streamOptionsFor(
 }
 
 function harnessStreamOptions(payload: JsonObject, config: ModelConfig) {
+  const rawToolChoice = payload.tool_choice;
+  const hasTools = Array.isArray(payload.host_tools) && payload.host_tools.length > 0;
   return {
     headers: normalizeHeaders(payload.headers),
     timeoutMs: asNumber(payload.timeout_ms, config.timeout_ms ?? 360000),
     maxRetries: asNumber(payload.max_retries, config.max_retries ?? 2),
     maxRetryDelayMs: asNumber(payload.max_retry_delay_ms, config.max_retry_delay_ms ?? 60000),
+    ...(typeof rawToolChoice === "string"
+      ? { toolChoice: rawToolChoice }
+      : hasTools
+        ? { toolChoice: "auto" }
+        : undefined),
   };
 }
 
